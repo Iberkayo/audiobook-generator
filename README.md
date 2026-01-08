@@ -4,12 +4,12 @@
 
 Yapay zeka tabanlı metin-konuşma teknolojisi ile kitaplarınızı doğal Türkçe sesli kitaba dönüştürün.
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/KULLANICI_ADIN/audiobook-generator/blob/main/colab_audiobook_v9.ipynb)
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://KULLANICI-audiobook.streamlit.app)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/iberkayo/audiobook-generator/blob/main/colab_audiobook_v9.ipynb)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://iberkayo-audiobook.streamlit.app)
 
 ---
 
-## 🎯 Problem
+##  Problem
 
 İlk denemede metni direkt TTS'e verdim. Sonuç: **Robotik, kopuk, dinlenemez.**
 
@@ -20,12 +20,12 @@ Yapay zeka tabanlı metin-konuşma teknolojisi ile kitaplarınızı doğal Türk
 
 ---
 
-## 🏗️ Mimari Çözüm: Şef-Terzi Modeli
+##  Mimari Çözüm: Şef-Terzi Modeli
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   📁 EPUB/PDF                                                   │
+│    EPUB/PDF                                                   │
 │        │                                                        │
 │        ▼                                                        │
 │   ┌─────────────────────────────────────────────────────────┐  │
@@ -38,7 +38,7 @@ Yapay zeka tabanlı metin-konuşma teknolojisi ile kitaplarınızı doğal Türk
 │        │                                                        │
 │        ▼                                                        │
 │   ┌─────────────────────────────────────────────────────────┐  │
-│   │ 🎼 ŞEF (Conductor)                                      │  │
+│   │  ŞEF (Conductor)                                      │  │
 │   │ • Türkçe cümle sınır tespiti (kısaltma korumalı)       │  │
 │   │ • Diyalog tespiti (regex pattern matching)             │  │
 │   │ • Akıllı Pause Map:                                     │  │
@@ -50,7 +50,7 @@ Yapay zeka tabanlı metin-konuşma teknolojisi ile kitaplarınızı doğal Türk
 │        │                                                        │
 │        ▼                                                        │
 │   ┌─────────────────────────────────────────────────────────┐  │
-│   │ 🎤 TTS ENGINE                                           │  │
+│   │  TTS ENGINE                                           │  │
 │   │ • Her cümle = Ayrı ses dosyası                         │  │
 │   │ • Edge TTS Neural (tr-TR-AhmetNeural/EmelNeural)       │  │
 │   │ • Async batch processing                                │  │
@@ -58,7 +58,7 @@ Yapay zeka tabanlı metin-konuşma teknolojisi ile kitaplarınızı doğal Türk
 │        │                                                        │
 │        ▼                                                        │
 │   ┌─────────────────────────────────────────────────────────┐  │
-│   │ 🧵 TERZİ (Stitcher)                                     │  │
+│   │  TERZİ (Stitcher)                                     │  │
 │   │ • Silence trimming (VAD tabanlı, -50dB threshold)      │  │
 │   │ • Room tone injection (-65dB Gaussian noise)           │  │
 │   │ • Crossfade (15ms, click/pop önleme)                   │  │
@@ -66,7 +66,7 @@ Yapay zeka tabanlı metin-konuşma teknolojisi ile kitaplarınızı doğal Türk
 │   └─────────────────────────────────────────────────────────┘  │
 │        │                                                        │
 │        ▼                                                        │
-│   🎧 MP3 AUDIOBOOK                                              │
+│    MP3 AUDIOBOOK                                              │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -75,7 +75,7 @@ Yapay zeka tabanlı metin-konuşma teknolojisi ile kitaplarınızı doğal Türk
 
 ## 🔧 Teknik Detaylar
 
-### 1️⃣ Türkçe Cümle Sınır Tespiti (SBD)
+###  Türkçe Cümle Sınır Tespiti (SBD)
 
 **Problem:** `"Dr. Ahmet geldi."` → Yanlış: `["Dr.", "Ahmet geldi."]`
 
@@ -98,7 +98,7 @@ for spine_item in book.spine:
     item = book.get_item_with_id(item_id)
 ```
 
-### 3️⃣ PDF Header/Footer Tespiti
+###  PDF Header/Footer Tespiti
 
 ```python
 # İlk 20 sayfada tekrar eden satırları bul
@@ -110,7 +110,7 @@ for page in pdf.pages[:20]:
 header_footer_lines = {l for l, c in Counter(headers).items() if c >= 3}
 ```
 
-### 4️⃣ Room Tone vs Mutlak Sessizlik
+###  Room Tone vs Mutlak Sessizlik
 
 **Problem:** Mutlak sessizlik (0 amplitude) kulaklıkta "vakum" etkisi yaratıyor
 
@@ -122,7 +122,7 @@ def room_tone(self, duration_ms):
     # -65dB seviyesinde doğal "oda sesi"
 ```
 
-### 5️⃣ Crossfade ile Click Önleme
+###  Crossfade ile Click Önleme
 
 **Problem:** İki ses birleşirken waveform uyumsuzluğu → "pop" sesi
 
@@ -134,7 +134,7 @@ combined.append(audio, crossfade=15)
 
 ---
 
-## 📊 Tech Stack
+##  Tech Stack
 
 | Katman | Teknoloji |
 |--------|-----------|
@@ -146,17 +146,17 @@ combined.append(audio, crossfade=15)
 
 ---
 
-## 🚀 Kullanım
+##  Kullanım
 
 ### Google Colab (Önerilen)
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/KULLANICI_ADIN/audiobook-generator/blob/main/colab_audiobook_v9.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/iberkayo/audiobook-generator/blob/main/colab_audiobook_v9.ipynb)
 
 ### Lokal Kurulum
 
 ```bash
 # Klonla
-git clone https://github.com/KULLANICI_ADIN/audiobook-generator.git
+git clone https://github.com/iberkayo/audiobook-generator.git
 cd audiobook-generator
 
 # Bağımlılıkları yükle
@@ -168,7 +168,7 @@ streamlit run app.py
 
 ---
 
-## 📁 Proje Yapısı
+##  Proje Yapısı
 
 ```
 audiobook-generator/
@@ -181,7 +181,7 @@ audiobook-generator/
 
 ---
 
-## 🎯 Öğrenilen Dersler
+##  Öğrenilen Dersler
 
 1. **Sesli kitap üretimi ≠ TTS çağrısı** - Prozodi, duraklama, segment geçişleri kritik
 2. **PDF "garbage in, garbage out"** - Akıllı metin çıkarma şart
@@ -190,16 +190,9 @@ audiobook-generator/
 
 ---
 
-## 📝 Lisans
+##  Lisans
 
 MIT
 
 ---
 
-## 🤝 Katkıda Bulunun
-
-Pull request'ler memnuniyetle karşılanır!
-
----
-
-**⭐ Beğendiyseniz yıldız vermeyi unutmayın!**
