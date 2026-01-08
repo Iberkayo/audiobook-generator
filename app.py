@@ -1,6 +1,5 @@
 """
-🎧 Audiobook Generator - Streamlit App
-EPUB/PDF → Profesyonel Sesli Kitap
+
 """
 import asyncio
 
@@ -25,18 +24,18 @@ import numpy as np
 from pydub import AudioSegment
 from pydub.effects import normalize
 
-# ══════════════════════════════════════════════════════════════
+
 # SAYFA AYARLARI
-# ══════════════════════════════════════════════════════════════
+
 st.set_page_config(
-    page_title="🎧 Audiobook Generator",
+    page_title=" Audiobook Generator",
     page_icon="🎧",
     layout="wide"
 )
 
-# ══════════════════════════════════════════════════════════════
+
 # DATA CLASSES
-# ══════════════════════════════════════════════════════════════
+
 @dataclass
 class Chapter:
     index: int
@@ -68,9 +67,9 @@ class SegType(Enum):
     DIALOGUE = 700
     CHAPTER = 3000
 
-# ══════════════════════════════════════════════════════════════
+
 # PARSER
-# ══════════════════════════════════════════════════════════════
+
 class SmartBookParser:
     def __init__(self):
         self.header_footer_lines = set()
@@ -208,9 +207,9 @@ class SmartBookParser:
         text = re.sub(r' +', ' ', text)
         return text.strip()
 
-# ══════════════════════════════════════════════════════════════
+
 # CONDUCTOR
-# ══════════════════════════════════════════════════════════════
+
 class Conductor:
     ABBR = ['Dr', 'Prof', 'vb', 'vs', 'bkz', 'örn']
 
@@ -266,9 +265,9 @@ class Conductor:
 
         return segs
 
-# ══════════════════════════════════════════════════════════════
+
 # TTS
-# ══════════════════════════════════════════════════════════════
+
 async def synthesize_segment(text: str, voice: str, path: str) -> bool:
     try:
         comm = edge_tts.Communicate(text, voice)
@@ -289,9 +288,9 @@ async def synthesize_all(segments: List[Segment], voice: str, temp_dir: str, pro
     
     return paths
 
-# ══════════════════════════════════════════════════════════════
+
 # STITCHER
-# ══════════════════════════════════════════════════════════════
+
 class Stitcher:
     def __init__(self, thresh=-50, xfade=15, room_db=-65):
         self.thresh = thresh
@@ -338,16 +337,16 @@ class Stitcher:
         
         return normalize(out)
 
-# ══════════════════════════════════════════════════════════════
+
 # STREAMLIT UI
-# ══════════════════════════════════════════════════════════════
+
 def main():
-    st.title("🎧 Audiobook Generator")
+    st.title(" Audiobook Generator")
     st.markdown("**EPUB/PDF → Profesyonel Sesli Kitap**")
     
     # Sidebar - Ayarlar
     with st.sidebar:
-        st.header("⚙️ Ayarlar")
+        st.header(" Ayarlar")
         
         voice_option = st.selectbox(
             "🎤 Ses",
@@ -356,10 +355,10 @@ def main():
         )
         voice = "tr-TR-AhmetNeural" if "Erkek" in voice_option else "tr-TR-EmelNeural"
         
-        use_room_tone = st.checkbox("🔇 Room Tone", value=True, help="Doğal arka plan sesi")
+        use_room_tone = st.checkbox(" Room Tone", value=True, help="Doğal arka plan sesi")
         
         st.divider()
-        st.markdown("### 📊 Nasıl Çalışır?")
+        st.markdown("###  Nasıl Çalışır?")
         st.markdown("""
         1. EPUB/PDF yükle
         2. Bölüm seç
@@ -371,7 +370,7 @@ def main():
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        st.header("📁 Dosya Yükle")
+        st.header(" Dosya Yükle")
         uploaded_file = st.file_uploader(
             "EPUB veya PDF seçin",
             type=['epub', 'pdf'],
@@ -388,27 +387,27 @@ def main():
             tmp_path = tmp.name
         
         # Parse et
-        with st.spinner("📖 Kitap okunuyor..."):
+        with st.spinner(" Kitap okunuyor..."):
             parser = SmartBookParser()
             try:
                 book = parser.parse(tmp_path, file_ext)
                 st.session_state['book'] = book
                 st.session_state['tmp_path'] = tmp_path
             except Exception as e:
-                st.error(f"❌ Parse hatası: {e}")
+                st.error(f" Parse hatası: {e}")
                 return
         
         with col2:
-            st.header("📚 Kitap Bilgileri")
-            st.markdown(f"**📖 {book.title}**")
-            st.markdown(f"**✍️ {book.author}**")
-            st.markdown(f"**📑 {len(book.chapters)} bölüm**")
-            st.markdown(f"**🔤 {book.total_chars:,} karakter**")
+            st.header(" Kitap Bilgileri")
+            st.markdown(f"** {book.title}**")
+            st.markdown(f"** {book.author}**")
+            st.markdown(f"** {len(book.chapters)} bölüm**")
+            st.markdown(f"** {book.total_chars:,} karakter**")
         
         st.divider()
         
         # Bölüm seçimi
-        st.header("📑 Bölüm Seçimi")
+        st.header(" Bölüm Seçimi")
         
         chapter_options = [f"[{ch.index}] {ch.title or '(Başlıksız)'}" for ch in book.chapters]
         
@@ -422,13 +421,13 @@ def main():
         end_idx = chapter_options.index(end_ch) + 1
         
         if start_idx > end_idx:
-            st.warning("⚠️ Başlangıç bölümü bitiş bölümünden büyük olamaz!")
+            st.warning(" Başlangıç bölümü bitiş bölümünden büyük olamaz!")
             return
         
         selected_chapters = [ch for ch in book.chapters if start_idx <= ch.index <= end_idx]
         
         # Önizleme
-        with st.expander("👀 Metin Önizleme"):
+        with st.expander(" Metin Önizleme"):
             if selected_chapters:
                 ch = selected_chapters[0]
                 st.markdown(f"**Bölüm {ch.index}: {ch.title or '(Başlıksız)'}**")
@@ -437,7 +436,7 @@ def main():
         st.divider()
         
         # Oluştur butonu
-        if st.button("🚀 Audiobook Oluştur", type="primary", use_container_width=True):
+        if st.button(" Audiobook Oluştur", type="primary", use_container_width=True):
             
             # Progress container
             progress_container = st.container()
@@ -447,10 +446,10 @@ def main():
                 st.markdown("### 🎼 Adım 1: Segmentasyon")
                 conductor = Conductor()
                 segments = conductor.process(selected_chapters)
-                st.success(f"✅ {len(segments)} segment oluşturuldu")
+                st.success(f" {len(segments)} segment oluşturuldu")
                 
                 # Adım 2: TTS
-                st.markdown("### 🎤 Adım 2: Ses Sentezi")
+                st.markdown("###  Adım 2: Ses Sentezi")
                 tts_progress = st.progress(0, text="Başlıyor...")
                 
                 with tempfile.TemporaryDirectory() as temp_dir:
@@ -462,10 +461,10 @@ def main():
                     )
                     loop.close()
                     
-                    st.success(f"✅ {len(paths)} ses dosyası oluşturuldu")
+                    st.success(f" {len(paths)} ses dosyası oluşturuldu")
                     
                     # Adım 3: Birleştirme
-                    st.markdown("### 🧵 Adım 3: Birleştirme")
+                    st.markdown("###  Adım 3: Birleştirme")
                     stitch_progress = st.progress(0, text="Başlıyor...")
                     
                     audios = [AudioSegment.from_mp3(p) for p in paths]
@@ -474,10 +473,10 @@ def main():
                     stitcher = Stitcher()
                     combined = stitcher.stitch(audios, pauses, stitch_progress, use_room_tone)
                     
-                    st.success("✅ Birleştirme tamamlandı")
+                    st.success(" Birleştirme tamamlandı")
                     
                     # MP3 oluştur
-                    st.markdown("### 🎧 Sonuç")
+                    st.markdown("###  Sonuç")
                     
                     output_path = os.path.join(temp_dir, "audiobook.mp3")
                     combined.export(output_path, format="mp3", bitrate="192k")
@@ -486,7 +485,7 @@ def main():
                     mins = int(duration // 60)
                     secs = int(duration % 60)
                     
-                    st.markdown(f"**⏱️ Süre:** {mins}:{secs:02d}")
+                    st.markdown(f"** Süre:** {mins}:{secs:02d}")
                     
                     # Audio player
                     with open(output_path, "rb") as f:
@@ -497,7 +496,7 @@ def main():
                     # İndirme butonu
                     safe_name = re.sub(r'[^\w\s-]', '', book.title)[:30].replace(' ', '_')
                     st.download_button(
-                        label="📥 MP3 İndir",
+                        label=" MP3 İndir",
                         data=audio_bytes,
                         file_name=f"{safe_name}_audiobook.mp3",
                         mime="audio/mpeg",
