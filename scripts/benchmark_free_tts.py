@@ -7,7 +7,6 @@ from pathlib import Path
 
 # Allow running this file directly with:
 #   python scripts/benchmark_free_tts.py ...
-# Python otherwise puts only the scripts/ directory on sys.path.
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -15,6 +14,7 @@ if str(REPO_ROOT) not in sys.path:
 from v2.pipeline import AudiobookPipeline
 from v2.tts.chatterbox import ChatterboxMultilingualAdapter
 from v2.tts.edge import EdgeTTSAdapter
+from v2.tts.f5_turkish import F5TurkishAdapter
 from v2.tts.freya import FreyaTTSAdapter
 
 
@@ -45,6 +45,15 @@ def build_adapter(args):
             seed=args.freya_seed,
             source_dir=args.freya_source_dir,
         )
+    if args.provider == "f5":
+        return F5TurkishAdapter(
+            device=args.device,
+            model_repo=args.f5_model,
+            reference_audio=args.reference_audio,
+            reference_text=args.reference_text,
+            nfe_steps=args.f5_steps,
+            speed=args.f5_speed,
+        )
     raise ValueError(f"Unknown provider: {args.provider}")
 
 
@@ -72,13 +81,16 @@ async def main_async(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate comparable free-TTS audiobook samples.")
-    parser.add_argument("--provider", choices=["edge", "chatterbox", "freya"], required=True)
+    parser.add_argument("--provider", choices=["edge", "chatterbox", "freya", "f5"], required=True)
     parser.add_argument("--text-file", help="Optional UTF-8 Turkish sample text.")
     parser.add_argument("--output-dir", default="benchmark_outputs")
     parser.add_argument("--voice", default="tr-TR-AhmetNeural", help="Edge TTS voice.")
     parser.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda", "mps"])
+
     parser.add_argument("--chatterbox-model", default="v3")
-    parser.add_argument("--reference-audio", help="Optional reference WAV for Chatterbox voice cloning.")
+    parser.add_argument("--reference-audio", help="Reference WAV. Required for F5; optional for Chatterbox.")
+    parser.add_argument("--reference-text", help="Exact transcript of --reference-audio. Required for F5.")
+
     parser.add_argument("--freya-model", default="freyavoice/freya-tts")
     parser.add_argument("--freya-steps", type=int, default=32)
     parser.add_argument("--freya-seed", type=int, default=9)
@@ -86,6 +98,15 @@ def parse_args():
         "--freya-source-dir",
         help="Optional path to a FreyaTTS source checkout. Defaults to third_party/FreyaTTS.",
     )
+
+    parser.add_argument(
+        "--f5-model",
+        default="multilingual-tts/F5-TTS-OpenBible-Turkish",
+        help="Hugging Face repo containing the Turkish F5 checkpoint/config/vocab.",
+    )
+    parser.add_argument("--f5-steps", type=int, default=32)
+    parser.add_argument("--f5-speed", type=float, default=1.0)
+
     return parser.parse_args()
 
 
