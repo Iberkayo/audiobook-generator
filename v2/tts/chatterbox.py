@@ -11,7 +11,8 @@ from .base import TTSAdapter
 class ChatterboxMultilingualAdapter(TTSAdapter):
     """Optional local/open-source Turkish TTS adapter.
 
-    Requires the Chatterbox package and its PyTorch/torchaudio dependencies.
+    Supports both current Chatterbox Multilingual releases (with ``t3_model``)
+    and older pip releases where ``from_pretrained`` only accepts ``device``.
     The model is loaded lazily so the base application remains lightweight.
     """
 
@@ -29,6 +30,7 @@ class ChatterboxMultilingualAdapter(TTSAdapter):
         self.t3_model = t3_model
         self.audio_prompt_path = audio_prompt_path
         self._model = None
+        self.loaded_model_variant = None
 
     @staticmethod
     def _resolve_device(device: str) -> str:
@@ -55,10 +57,25 @@ class ChatterboxMultilingualAdapter(TTSAdapter):
                 "Chatterbox is not installed. Install the optional local TTS dependencies first."
             ) from exc
 
-        self._model = ChatterboxMultilingualTTS.from_pretrained(
-            device=self.device,
-            t3_model=self.t3_model,
-        )
+        # Current upstream releases support t3_model="v3". Older pip releases
+        # expose only from_pretrained(device=...). Keep the adapter compatible
+        # with both so local benchmarks do not depend on one exact package build.
+        try:
+            self._model = ChatterboxMultilingualTTS.from_pretrained(
+                device=self.device,
+                t3_model=self.t3_model,
+            )
+            self.loaded_model_variant = self.t3_model
+        except TypeError as exc:
+            if "t3_model" not in str(exc):
+                raise
+            print(
+                "[Chatterbox] Installed package does not support t3_model; "
+                "falling back to the legacy multilingual checkpoint."
+            )
+            self._model = ChatterboxMultilingualTTS.from_pretrained(device=self.device)
+            self.loaded_model_variant = "legacy"
+
         return self._model
 
     def _generate_sync(self, text: str, output_path: Path) -> None:
