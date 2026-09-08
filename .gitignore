@@ -1,0 +1,5 @@
+.venv/
+__pycache__/
+*.pyc
+benchmark_outputs/
+third_party/FreyaTTS/
