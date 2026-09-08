@@ -21,6 +21,8 @@ class SpeechSegment:
     context_after: str = ""
     continuity_group_id: str = ""
     instruction: NarrationInstruction = field(default_factory=NarrationInstruction)
+    source_text: Optional[str] = None
+    normalization_events: List[dict] = field(default_factory=list)
 
 
 @dataclass
