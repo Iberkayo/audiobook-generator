@@ -15,6 +15,7 @@ if str(REPO_ROOT) not in sys.path:
 from v2.pipeline import AudiobookPipeline
 from v2.tts.chatterbox import ChatterboxMultilingualAdapter
 from v2.tts.edge import EdgeTTSAdapter
+from v2.tts.freya import FreyaTTSAdapter
 
 
 DEFAULT_SAMPLE = """Kapının arkasından hafif bir ses geldi. Ahmet olduğu yerde durdu. Koridorda kimse görünmüyordu.
@@ -35,6 +36,14 @@ def build_adapter(args):
             language_id="tr",
             t3_model=args.chatterbox_model,
             audio_prompt_path=args.reference_audio,
+        )
+    if args.provider == "freya":
+        return FreyaTTSAdapter(
+            device=args.device,
+            model_id=args.freya_model,
+            steps=args.freya_steps,
+            seed=args.freya_seed,
+            source_dir=args.freya_source_dir,
         )
     raise ValueError(f"Unknown provider: {args.provider}")
 
@@ -63,13 +72,20 @@ async def main_async(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate comparable free-TTS audiobook samples.")
-    parser.add_argument("--provider", choices=["edge", "chatterbox"], required=True)
+    parser.add_argument("--provider", choices=["edge", "chatterbox", "freya"], required=True)
     parser.add_argument("--text-file", help="Optional UTF-8 Turkish sample text.")
     parser.add_argument("--output-dir", default="benchmark_outputs")
     parser.add_argument("--voice", default="tr-TR-AhmetNeural", help="Edge TTS voice.")
     parser.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda", "mps"])
     parser.add_argument("--chatterbox-model", default="v3")
     parser.add_argument("--reference-audio", help="Optional reference WAV for Chatterbox voice cloning.")
+    parser.add_argument("--freya-model", default="freyavoice/freya-tts")
+    parser.add_argument("--freya-steps", type=int, default=32)
+    parser.add_argument("--freya-seed", type=int, default=9)
+    parser.add_argument(
+        "--freya-source-dir",
+        help="Optional path to a FreyaTTS source checkout. Defaults to third_party/FreyaTTS.",
+    )
     return parser.parse_args()
 
 
