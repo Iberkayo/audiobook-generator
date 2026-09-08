@@ -1,0 +1,5 @@
+# Optional local/open-source TTS dependencies for V2 benchmarking.
+# Install these in a separate Python 3.11 environment when testing Chatterbox.
+chatterbox-tts
+torch
+torchaudio
