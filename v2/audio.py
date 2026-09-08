@@ -8,9 +8,11 @@ class AudioAssembler:
     """Assembles generated segments without synthetic Gaussian room tone.
 
     Audio is kept as PCM in memory and encoded only at final export.
+    The TTS engine already handles punctuation-level timing, so we keep only a
+    very short structural gap between separately generated semantic blocks.
     """
 
-    def __init__(self, inter_segment_ms: int = 180):
+    def __init__(self, inter_segment_ms: int = 80):
         self.inter_segment_ms = inter_segment_ms
 
     def assemble(self, audio_paths: Iterable[str]) -> AudioSegment:
